@@ -1,12 +1,12 @@
 const socket = io();
 let myRoom = null;
 let myName = "";
+let isMyTurn = false;
 
 function join() {
     myName = document.getElementById('player-name').value;
     myRoom = document.getElementById('room-input').value.toUpperCase();
     if(!myName || !myRoom) return alert("Pseudo et Code requis !");
-    
     socket.emit('joinRoom', { name: myName, roomId: myRoom });
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('lobby-container').style.display = 'flex';
@@ -16,10 +16,8 @@ function join() {
 socket.on('updatePlayers', (players) => {
     const list = document.getElementById('player-list');
     list.innerHTML = players.map(p => `<li>👤 ${p.name}</li>`).join('');
-    
     if(players.length >= 2 && players[0].id === socket.id) {
         document.getElementById('start-game-btn').style.display = 'block';
-        document.getElementById('player-count-msg').innerText = "Prêt à lancer !";
     }
 });
 
@@ -31,9 +29,25 @@ socket.on('gameStarted', (state) => {
     document.getElementById('lobby-container').style.display = 'none';
     document.getElementById('game-container').style.display = 'flex';
     document.getElementById('room-display').innerText = "SALON : " + myRoom;
-    renderGrid(state.players[socket.id].grid);
-    updateDiscard(state.discard);
+    updateUI(state);
 });
+
+socket.on('gameState', (state) => {
+    updateUI(state);
+});
+
+function updateUI(state) {
+    const currentPlayer = state.players[state.currentPlayerId];
+    isMyTurn = (state.currentPlayerId === socket.id);
+    
+    const indicator = document.getElementById('turn-indicator');
+    indicator.innerText = isMyTurn ? "À TOI DE JOUER !" : "Tour de : " + currentPlayer.name;
+    indicator.style.color = isMyTurn ? "#27ae60" : "white";
+
+    renderGrid(state.players[socket.id].grid);
+    renderOpponents(state.players);
+    updateDiscard(state.discard);
+}
 
 function renderGrid(grid) {
     const gridDiv = document.getElementById('grid');
@@ -42,7 +56,31 @@ function renderGrid(grid) {
         const c = document.createElement('div');
         c.className = 'card ' + (card.isVisible ? getColorClass(card.value) : 'back');
         c.innerText = card.isVisible ? card.value : '?';
+        c.onclick = () => {
+            if(isMyTurn && !card.isVisible) {
+                socket.emit('playerAction', { roomId: myRoom, index: index });
+            }
+        };
         gridDiv.appendChild(c);
+    });
+}
+
+function renderOpponents(players) {
+    const container = document.getElementById('opponents-container');
+    container.innerHTML = '';
+    Object.values(players).forEach(p => {
+        if (p.id !== socket.id) {
+            const div = document.createElement('div');
+            div.className = 'opponent-mini';
+            div.innerHTML = `<span>${p.name}</span><div class="mini-grid"></div>`;
+            const miniGrid = div.querySelector('.mini-grid');
+            p.grid.forEach(card => {
+                const c = document.createElement('div');
+                c.className = 'card-mini ' + (card.isVisible ? getColorClass(card.value) : 'back');
+                miniGrid.appendChild(c);
+            });
+            container.appendChild(div);
+        }
     });
 }
 

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Skyjo Pro Online</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,10 +11,10 @@
         <h1>SKYJO <span>Pro</span></h1>
         <div class="menu-card">
             <input type="text" id="player-name" placeholder="Ton pseudo...">
-            <input type="text" id="room-input" placeholder="Code du Salon (ex: ABCD)">
+            <input type="text" id="room-input" placeholder="Code du Salon">
             <button class="btn-primary" onclick="join()">REJOINDRE / CRÉER</button>
         </div>
-        <div id="leaderboard"><h3>🏆 TOP 5 CHAMPIONS</h3><ul id="score-list"></ul></div>
+        <div id="leaderboard"><h3>🏆 TOP 5</h3><ul id="score-list"></ul></div>
     </div>
 
     <div id="lobby-container" style="display:none;">
@@ -31,22 +31,25 @@
     <div id="game-container" style="display:none;">
         <header class="game-header">
             <div id="room-display"></div>
-            <div id="turn-indicator">C'est le tour de...</div>
+            <div id="turn-indicator">Chargement...</div>
             <button class="btn-exit" onclick="location.reload()">Quitter</button>
         </header>
 
         <main class="game-layout">
             <section class="play-area">
+                <div id="opponents-container"></div>
+                
                 <div class="central-piles">
                     <div class="pile">
                         <span>Pioche</span>
-                        <div id="deck" class="card back" onclick="drawFromDeck()">?</div>
+                        <div id="deck" class="card back">?</div>
                     </div>
                     <div class="pile">
                         <span>Défausse</span>
-                        <div id="discard" class="card" onclick="drawFromDiscard()"></div>
+                        <div id="discard" class="card"></div>
                     </div>
                 </div>
+
                 <div class="my-board">
                     <h3>Ma Grille</h3>
                     <div id="grid" class="grid"></div>
