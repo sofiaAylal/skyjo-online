@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyjo Pro Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="main-menu">
+        <h1>SKYJO <span>Pro</span></h1>
+        <input type="text" id="player-name" placeholder="Pseudo">
+        <input type="text" id="room-input" placeholder="Code Salon">
+        <button class="btn-primary" onclick="join()">Rejoindre / Créer</button>
+        <div id="leaderboard"><h3>🏆 Top 5</h3><ul id="score-list"></ul></div>
+    </div>
+
+    <div id="game-container" style="display:none;">
+        <div id="room-code-display"></div>
+        <div id="chat-box">
+            <div id="messages"></div>
+            <input type="text" id="chat-input" placeholder="Chat...">
+        </div>
+        <div class="board">
+            <div id="deck" class="card back">PIOCHe</div>
+            <div id="discard" class="card"></div>
+        </div>
+        <div id="grid" class="grid"></div>
+    </div>
+
+    <button id="help-btn" onclick="document.getElementById('help-modal').style.display='block'">?</button>
+    <div id="help-modal" class="modal" onclick="this.style.display='none'">
+        <div class="modal-content">
+            <h2>Règles</h2>
+            <p>-2 à 12. Moins de points gagne. 3 identiques en colonne = 0 pt.</p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

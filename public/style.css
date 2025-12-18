@@ -1,0 +1,28 @@
+:root { --neg: #00008B; --zero: #87CEEB; --low: #27ae60; --mid: #f1c40f; --high: #e74c3c; }
+body { margin: 0; font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; }
+
+#main-menu { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; }
+input { padding: 10px; border-radius: 5px; border: none; }
+.btn-primary { padding: 10px 20px; background: var(--low); color: white; border: none; cursor: pointer; border-radius: 5px; }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 400px; margin: 20px auto; }
+
+.card { 
+    aspect-ratio: 2/3; background: white; color: #333; border-radius: 8px; 
+    display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.5rem;
+    transition: transform 0.3s; transform-style: preserve-3d; cursor: pointer;
+}
+.card.back { background: #2c3e50; color: white; border: 2px solid white; }
+
+/* Couleurs catégories */
+.cat-neg { background: var(--neg); color: white; }
+.cat-zero { background: var(--zero); }
+.cat-low { background: var(--low); color: white; }
+.cat-mid { background: var(--mid); }
+.cat-high { background: var(--high); color: white; }
+
+#chat-box { position: fixed; bottom: 10px; left: 10px; width: 200px; background: rgba(0,0,0,0.8); padding: 5px; font-size: 0.8rem; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); }
+.modal-content { background: white; color: #333; margin: 20% auto; padding: 20px; width: 70%; border-radius: 10px; }
+
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(4, 80px); } }
