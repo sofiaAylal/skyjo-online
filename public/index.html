@@ -1,72 +1,48 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Skyjo Pro Online</title>
+    <title>Skyjo Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="main-menu">
         <h1>SKYJO <span>Pro</span></h1>
-        <div class="menu-card">
-            <input type="text" id="player-name" placeholder="Ton pseudo...">
-            <input type="text" id="room-input" placeholder="Code du Salon">
-            <button class="btn-primary" onclick="join()">REJOINDRE / CRÉER</button>
-        </div>
-        <div id="leaderboard"><h3>🏆 TOP 5</h3><ul id="score-list"></ul></div>
-    </div>
-
-    <div id="lobby-container" style="display:none;">
-        <div class="lobby-card">
-            <h2 id="lobby-title">Salon : ---</h2>
-            <div id="player-list-box">
-                <p id="player-count-msg">Attente de joueurs...</p>
-                <ul id="player-list"></ul>
-            </div>
-            <button id="start-game-btn" class="btn-primary" style="display:none;" onclick="requestStart()">LANCER LA PARTIE</button>
-        </div>
+        <input type="text" id="player-name" placeholder="Pseudo">
+        <input type="text" id="room-input" placeholder="Code">
+        <button class="btn-primary" onclick="join()">JOUER</button>
     </div>
 
     <div id="game-container" style="display:none;">
-        <header class="game-header">
-            <div id="room-display"></div>
-            <div id="turn-indicator">Chargement...</div>
-            <button class="btn-exit" onclick="location.reload()">Quitter</button>
-        </header>
+        <div id="turn-indicator">Attente...</div>
+        
+        <div id="opponents-container"></div>
 
-        <main class="game-layout">
-            <section class="play-area">
-                <div id="opponents-container"></div>
-                
-                <div class="central-piles">
-                    <div class="pile">
-                        <span>Pioche</span>
-                        <div id="deck" class="card back">?</div>
-                    </div>
-                    <div class="pile">
-                        <span>Défausse</span>
-                        <div id="discard" class="card"></div>
-                    </div>
-                </div>
+        <div class="central-zone">
+            <div id="deck" class="card back" draggable="true" ondragstart="drag(event)">?</div>
+            <div id="discard" class="card" draggable="true" ondragstart="drag(event)"></div>
+        </div>
 
-                <div class="my-board">
-                    <h3>Ma Grille</h3>
-                    <div id="grid" class="grid"></div>
-                </div>
-            </section>
+        <div id="grid" class="grid"></div>
 
-            <aside class="sidebar">
-                <div class="chat-section">
-                    <h4>CHAT</h4>
-                    <div id="messages"></div>
-                    <div class="chat-input-group">
-                        <input type="text" id="chat-input" placeholder="Message...">
-                        <button onclick="sendMsg()">OK</button>
-                    </div>
+        <div id="chat-drawer">
+            <button id="toggle-chat" onclick="toggleChat()">💬 Chat</button>
+            <div id="chat-content">
+                <div id="messages"></div>
+                <div class="chat-input">
+                    <input type="text" id="chat-in"><button onclick="sendMsg()">OK</button>
                 </div>
-            </aside>
-        </main>
+            </div>
+        </div>
+    </div>
+
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="winner-txt">Gagné !</h2>
+            <div id="final-scores"></div>
+            <button onclick="location.reload()">Rejouer</button>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
