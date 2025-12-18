@@ -3,45 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Skyjo Pro</title>
+    <title>Skyjo Pro Online</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="main-menu">
+    <div id="main-menu" class="full-screen">
         <h1>SKYJO <span>Pro</span></h1>
-        <input type="text" id="player-name" placeholder="Pseudo">
-        <input type="text" id="room-input" placeholder="Code">
-        <button class="btn-primary" onclick="join()">JOUER</button>
+        <div class="card-ui">
+            <input type="text" id="player-name" placeholder="Ton pseudo...">
+            <input type="text" id="room-input" placeholder="Code du Salon">
+            <button class="btn-main" onclick="join()">REJOINDRE</button>
+        </div>
+    </div>
+
+    <div id="lobby-container" class="full-screen" style="display:none;">
+        <div class="card-ui">
+            <h2 id="lobby-title">Salon</h2>
+            <ul id="player-list"></ul>
+            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LA PARTIE</button>
+        </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator">Attente...</div>
-        
+        <div id="turn-indicator">Chargement...</div>
         <div id="opponents-container"></div>
-
-        <div class="central-zone">
-            <div id="deck" class="card back" draggable="true" ondragstart="drag(event)">?</div>
-            <div id="discard" class="card" draggable="true" ondragstart="drag(event)"></div>
+        
+        <div class="table-center">
+            <div class="pile-box">
+                <span>Pioche</span>
+                <div id="deck" class="card back" draggable="true" ondragstart="onDrag(event)">?</div>
+            </div>
+            <div class="pile-box">
+                <span>Défausse</span>
+                <div id="discard" class="card" draggable="true" ondragstart="onDrag(event)"></div>
+            </div>
         </div>
 
         <div id="grid" class="grid"></div>
 
-        <div id="chat-drawer">
-            <button id="toggle-chat" onclick="toggleChat()">💬 Chat</button>
-            <div id="chat-content">
-                <div id="messages"></div>
-                <div class="chat-input">
-                    <input type="text" id="chat-in"><button onclick="sendMsg()">OK</button>
-                </div>
+        <div id="chat-tab" onclick="toggleChat()">💬 Chat</div>
+        <div id="chat-window">
+            <div id="messages"></div>
+            <div class="chat-bar">
+                <input type="text" id="chat-in"><button onclick="sendMsg()">OK</button>
             </div>
-        </div>
-    </div>
-
-    <div id="win-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="winner-txt">Gagné !</h2>
-            <div id="final-scores"></div>
-            <button onclick="location.reload()">Rejouer</button>
         </div>
     </div>
 

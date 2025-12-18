@@ -18,8 +18,9 @@ io.on('connection', (socket) => {
     socket.on('joinRoom', ({ name, roomId }) => {
         const room = roomId.toUpperCase();
         socket.join(room);
-        if (!rooms[room]) rooms[room] = { players: {}, status: 'Lobby', deck: [], discard: [], turnIndex: 0, isLastRound: false, finisherId: null };
-        rooms[room].players[socket.id] = { id: socket.id, name, grid: Array(12).fill({value:0, isVisible:false}) };
+        if (!rooms[room]) rooms[room] = { players: {}, status: 'Lobby', deck: [], discard: [], turnIndex: 0, isLastRound: false };
+        
+        rooms[room].players[socket.id] = { id: socket.id, name, grid: [], score: 0 };
         io.to(room).emit('updatePlayers', Object.values(rooms[room].players));
     });
 
@@ -34,7 +35,7 @@ io.on('connection', (socket) => {
         r.discard = [r.deck.pop()];
         r.status = 'Playing';
         r.currentPlayerId = Object.keys(r.players)[0];
-        io.to(roomId.toUpperCase()).emit('gameState', r);
+        io.to(roomId.toUpperCase()).emit('gameStarted', r);
     });
 
     socket.on('playerAction', (data) => {
@@ -42,37 +43,22 @@ io.on('connection', (socket) => {
         if (!r || socket.id !== r.currentPlayerId) return;
 
         const p = r.players[socket.id];
-        let oldCardValue = p.grid[data.index].value;
-
         if (data.type === 'SWAP') {
+            const oldVal = p.grid[data.index].value;
             p.grid[data.index] = { value: data.newValue, isVisible: true };
-            r.discard.push(oldCardValue);
-        } else if (data.type === 'FLIP') {
+            r.discard.push(oldVal);
+        } else {
             p.grid[data.index].isVisible = true;
-        }
-
-        // Vérifier si le joueur a fini sa grille
-        if (!r.isLastRound && p.grid.every(c => c.isVisible)) {
-            r.isLastRound = true;
-            r.finisherId = socket.id;
-            io.to(data.roomId.toUpperCase()).emit('chatMsg', {name: "SYSTÈME", message: `${p.name} termine ! Dernier tour pour les autres.`});
         }
 
         const ids = Object.keys(r.players);
         r.turnIndex = (r.turnIndex + 1) % ids.length;
         r.currentPlayerId = ids[r.turnIndex];
+        io.to(data.roomId.toUpperCase()).emit('gameState', r);
+    });
 
-        // Fin de la manche
-        if (r.isLastRound && r.currentPlayerId === r.finisherId) {
-            let results = ids.map(id => {
-                let score = r.players[id].grid.reduce((a, b) => a + b.value, 0);
-                return { name: r.players[id].name, score };
-            }).sort((a,b) => a.score - b.score);
-            io.to(data.roomId.toUpperCase()).emit('gameOver', results);
-            delete rooms[data.roomId.toUpperCase()];
-        } else {
-            io.to(data.roomId.toUpperCase()).emit('gameState', r);
-        }
+    socket.on('sendChatMessage', (data) => {
+        io.to(data.roomId.toUpperCase()).emit('receiveChatMessage', data);
     });
 });
 server.listen(process.env.PORT || 3000);
