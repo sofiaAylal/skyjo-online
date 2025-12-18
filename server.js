@@ -10,7 +10,7 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-// MongoDB
+// Connexion MongoDB
 mongoose.connect(process.env.MONGO_URI).catch(err => console.log("Erreur Mongo:", err));
 const Score = mongoose.model('Score', { name: String, wins: { type: Number, default: 0 } });
 
@@ -18,7 +18,7 @@ let rooms = {};
 
 function createDeck() {
     let deck = [];
-    [-2,-2,-2,-2,-2].forEach(v => deck.push(v));
+    for(let i=0; i<5; i++) deck.push(-2);
     for(let i=0; i<10; i++) deck.push(-1);
     for(let i=0; i<15; i++) deck.push(0);
     for(let v=1; v<=12; v++) { for(let i=0; i<10; i++) deck.push(v); }
@@ -34,13 +34,13 @@ io.on('connection', (socket) => {
         rooms[room].players[socket.id] = { id: socket.id, name, grid: [], score: 0 };
         io.to(room).emit('updatePlayers', Object.values(rooms[room].players));
         
-        // Envoyer le leaderboard global
         const top = await Score.find().sort({ wins: -1 }).limit(5);
         socket.emit('updateLeaderboard', top);
     });
 
     socket.on('startGame', (roomId) => {
         const room = rooms[roomId];
+        if (!room) return;
         room.deck = createDeck();
         Object.keys(room.players).forEach(id => {
             room.players[id].grid = Array.from({length: 12}, () => ({ value: room.deck.pop(), isVisible: false }));
@@ -53,6 +53,15 @@ io.on('connection', (socket) => {
     socket.on('sendChatMessage', (data) => {
         io.to(data.roomId).emit('receiveChatMessage', data);
     });
+
+    socket.on('disconnecting', () => {
+        socket.rooms.forEach(room => {
+            if (rooms[room]) {
+                delete rooms[room].players[socket.id];
+                io.to(room).emit('updatePlayers', Object.values(rooms[room].players));
+            }
+        });
+    });
 });
 
-server.listen(process.env.PORT || 3000, () => console.log("Serveur prêt !"));
+server.listen(process.env.PORT || 3000, () => console.log("🚀 Serveur Skyjo Prêt !"));
