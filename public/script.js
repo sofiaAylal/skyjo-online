@@ -1,5 +1,5 @@
 const socket = io();
-let myRoom, myName, isMyTurn = false, selectedFromClick = null, tempDeckValue = null;
+let myRoom, myName, isMyTurn = false, selectedFromClick = null, tempDeckValue = null, lastRoundFired = false;
 
 const sounds = {
     flip: new Audio('sounds/flip.mp3'),
@@ -24,21 +24,24 @@ socket.on('updatePlayers', (p) => {
 });
 
 function requestStart() { socket.emit('startGame', myRoom); }
-socket.on('gameStarted', (s) => { document.getElementById('lobby-container').style.display = 'none'; document.getElementById('game-container').style.display = 'flex'; updateUI(s); });
+socket.on('gameStarted', (s) => { 
+    document.getElementById('lobby-container').style.display = 'none'; 
+    document.getElementById('game-container').style.display = 'flex'; 
+    updateUI(s); 
+});
 socket.on('gameState', updateUI);
-
-function onDragStart(ev) {
-    if(!isMyTurn) return ev.preventDefault();
-    ev.dataTransfer.setData("sourceId", ev.target.id === "deck-cont" ? "deck" : "discard");
-}
 
 function updateUI(state) {
     isMyTurn = state.currentPlayerId === socket.id;
     document.getElementById('turn-indicator').innerText = isMyTurn ? "⭐️ À TOI !" : "Tour de " + state.players[state.currentPlayerId].name;
     
-    if (state.isLastRound) {
-        const b = document.getElementById('last-round-banner');
-        if(!b.classList.contains('show')) { b.classList.add('show'); playSnd('alert'); }
+    // Popup Dernier Tour (5 secondes)
+    if (state.isLastRound && !lastRoundFired) {
+        const popup = document.getElementById('last-round-popup');
+        popup.classList.add('show');
+        playSnd('alert');
+        lastRoundFired = true;
+        setTimeout(() => popup.classList.remove('show'), 5000);
     }
 
     const deckCont = document.getElementById('deck-cont');
@@ -64,10 +67,6 @@ function updateUI(state) {
         const container = document.createElement('div');
         container.className = `card-container ${c.isVisible ? 'is-visible' : ''} ${c.removed ? 'removed' : ''}`;
         container.innerHTML = `<div class="card-inner"><div class="card-back">?</div><div class="card-front ${getColorClass(c.value)}">${c.value}</div></div>`;
-        
-        container.ondragover = (e) => e.preventDefault();
-        container.ondrop = (e) => { const src = e.dataTransfer.getData("sourceId"); executeSwap(i, src === 'deck' ? tempDeckValue : lastD); };
-        
         container.onclick = () => {
             if(!isMyTurn) return;
             if(selectedFromClick) executeSwap(i, selectedFromClick === 'deck' ? tempDeckValue : lastD);
@@ -76,11 +75,12 @@ function updateUI(state) {
         gridDiv.appendChild(container);
     });
 
+    // Adversaires : Affichage amélioré (Scroll horizontal si besoin)
     const opp = document.getElementById('opponents-container'); opp.innerHTML = '';
     Object.values(state.players).forEach(p => {
         if(p.id !== socket.id) {
             const d = document.createElement('div'); d.className = 'opponent-mini';
-            d.innerHTML = `<span>${p.name}</span><div class="mini-grid"></div>`;
+            d.innerHTML = `<div style="font-size:0.6rem;text-align:center">${p.name}</div><div class="mini-grid"></div>`;
             p.grid.forEach(c => {
                 const mc = document.createElement('div');
                 if (c.removed) mc.className = 'card-mini removed';
@@ -104,3 +104,4 @@ socket.on('gameOver', (res) => {
     playSnd('win');
 });
 function getColorClass(v) { if(v < 0) return 'cat-neg'; if(v === 0) return 'cat-zero'; if(v <= 4) return 'cat-low'; if(v <= 8) return 'cat-mid'; return 'cat-high'; }
+function onDragStart(ev) { if(!isMyTurn) return ev.preventDefault(); ev.dataTransfer.setData("sourceId", ev.target.id === "deck-cont" ? "deck" : "discard"); }

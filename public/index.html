@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Skyjo Pro Online</title>
+    <title>Skyjo Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-    <div id="last-round-banner">⚠️ DERNIER TOUR !</div>
+    <div id="last-round-popup">⚠️ DERNIER TOUR !</div>
 
     <div id="main-menu" class="full-screen">
         <h1>SKYJO <span>Pro</span></h1>
@@ -23,12 +23,12 @@
         <div class="card-ui">
             <h2 id="lobby-title">Salon</h2>
             <ul id="player-list"></ul>
-            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LE JEU</button>
+            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER</button>
         </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator">Initialisation...</div>
+        <div id="turn-indicator">En attente...</div>
         <div id="opponents-container"></div>
         
         <div class="table-center">
@@ -61,7 +61,7 @@
         <div class="modal-content">
             <h2 id="winner-txt"></h2>
             <div id="final-scores"></div>
-            <button class="btn-main" onclick="location.reload()">RETOUR AU MENU</button>
+            <button class="btn-main" onclick="location.reload()">REJOUER</button>
         </div>
     </div>
 
