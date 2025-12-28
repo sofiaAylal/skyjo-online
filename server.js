@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGO_URI).catch(err => console.log(err));
+mongoose.connect(process.env.MONGO_URI).catch(err => console.log("Erreur Mongo:", err));
 
 let rooms = {};
 
@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
         if (!r) return;
         r.deck = createDeck();
         Object.keys(r.players).forEach(id => {
-            r.players[id].grid = Array.from({length:12}, () => ({ value: r.deck.pop(), isVisible: false }));
+            r.players[id].grid = Array.from({length:12}, () => ({ value: r.deck.pop(), isVisible: false, removed: false }));
             r.players[id].grid[0].isVisible = r.players[id].grid[1].isVisible = true;
         });
         r.discard = [r.deck.pop()];
@@ -45,65 +45,47 @@ io.on('connection', (socket) => {
         io.to(roomId.toUpperCase()).emit('gameStarted', r);
     });
 
-    // Dans server.js, modifie la section playerAction :
-
     socket.on('playerAction', (data) => {
         const r = rooms[data.roomId.toUpperCase()];
         if (!r || socket.id !== r.currentPlayerId) return;
-
         const p = r.players[socket.id];
-        
-        // 1. Appliquer l'action (SWAP ou FLIP)
+
         if (data.type === 'SWAP') {
             r.discard.push(p.grid[data.index].value);
-            p.grid[data.index] = { value: data.newValue, isVisible: true };
-        } else {
+            p.grid[data.index] = { value: data.newValue, isVisible: true, removed: false };
+        } else if (data.type === 'FLIP') {
             p.grid[data.index].isVisible = true;
         }
 
-        // 2. LOGIQUE DE SUPPRESSION (COMBOS)
-        checkAndRemoveCombos(p);
+        // LOGIQUE SUPPRESSION COLONNES (3 identiques verticalement)
+        for (let col = 0; col < 4; col++) {
+            let i1 = col, i2 = col + 4, i3 = col + 8;
+            let c1 = p.grid[i1], c2 = p.grid[i2], c3 = p.grid[i3];
+            if (c1.isVisible && c2.isVisible && c3.isVisible && !c1.removed) {
+                if (c1.value === c2.value && c2.value === c3.value) {
+                    c1.removed = c2.removed = c3.removed = true;
+                    c1.value = c2.value = c3.value = 0;
+                }
+            }
+        }
 
-        // 3. Vérifier si la grille est vide ou pleine après suppression
-        if (!r.isLastRound && (p.grid.every(c => c.isVisible) || p.grid.every(c => c.removed))) {
+        if (!r.isLastRound && p.grid.every(c => c.isVisible || c.removed)) {
             r.isLastRound = true;
             r.finisherId = socket.id;
         }
 
-        // Suite du code (changement de tour...) identique à avant
         const ids = Object.keys(r.players);
         r.turnIndex = (r.turnIndex + 1) % ids.length;
         r.currentPlayerId = ids[r.turnIndex];
-        
-        // ... émission de gameState ou gameOver ...
-    });
 
-    // NOUVELLE FONCTION DE SUPPRESSION
-    function checkAndRemoveCombos(player) {
-        const grid = player.grid;
-        // On considère une grille de 3 lignes x 4 colonnes
-        const ROWS = 3;
-        const COLS = 4;
-
-        // Vérification des colonnes (ex: index 0, 4, 8)
-        for (let c = 0; c < COLS; c++) {
-            let idx1 = c, idx2 = c + 4, idx3 = c + 8;
-            let v1 = grid[idx1], v2 = grid[idx2], v3 = grid[idx3];
-
-            if (v1.isVisible && v2.isVisible && v3.isVisible && !v1.removed) {
-                if (v1.value === v2.value && v2.value === v3.value) {
-                    // Combo trouvé ! On marque les cartes comme supprimées
-                    v1.removed = true; v2.removed = true; v3.removed = true;
-                    // Optionnel : on peut les mettre à 0 ou les sortir du calcul
-                    v1.value = 0; v2.value = 0; v3.value = 0; 
-                }
-            }
+        if (r.isLastRound && r.currentPlayerId === r.finisherId) {
+            const scores = ids.map(id => ({ name: r.players[id].name, score: r.players[id].grid.reduce((s, c) => s + c.value, 0) }));
+            io.to(data.roomId.toUpperCase()).emit('gameOver', scores.sort((a,b) => a.score - b.score));
+            delete rooms[data.roomId.toUpperCase()];
+        } else {
+            io.to(data.roomId.toUpperCase()).emit('gameState', r);
         }
-        
-        // Note : Pour respecter ta règle "soit ligne soit colonne", 
-        // on pourrait ajouter un flag player.comboType = 'col' ou 'row'.
-        // Ici, le code vérifie les colonnes (standard Skyjo). 
-    }
+    });
 
     socket.on('sendChatMessage', (data) => {
         io.to(data.roomId.toUpperCase()).emit('receiveChatMessage', data);
