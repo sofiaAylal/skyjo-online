@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="last-round-banner">⚠️ DERNIER TOUR ! Quelqu'un a fini sa grille !</div>
+
     <div id="main-menu" class="full-screen">
         <h1>SKYJO <span>Pro</span></h1>
         <div class="card-ui">
@@ -20,24 +22,37 @@
         <div class="card-ui">
             <h2 id="lobby-title">Salon</h2>
             <ul id="player-list"></ul>
-            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER</button>
+            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LE JEU</button>
         </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator">Attente...</div>
+        <div id="turn-indicator">Initialisation...</div>
         <div id="opponents-container"></div>
+        
         <div class="table-center">
             <div class="pile-box">
                 <span>Pioche</span>
-                <div id="deck" class="card back" draggable="true" ondragstart="onDragStart(event)">?</div>
+                <div id="deck-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
+                    <div class="card-inner">
+                        <div class="card-back">?</div>
+                        <div id="deck-val" class="card-front"></div>
+                    </div>
+                </div>
             </div>
             <div class="pile-box">
                 <span>Défausse</span>
-                <div id="discard" class="card" draggable="true" ondragstart="onDragStart(event)"></div>
+                <div id="discard-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
+                    <div class="card-inner" style="transform: rotateY(180deg);">
+                        <div class="card-back"></div>
+                        <div id="discard-val" class="card-front"></div>
+                    </div>
+                </div>
             </div>
         </div>
+
         <div id="grid" class="grid"></div>
+
         <div id="chat-tab" onclick="toggleChat()">💬 Chat</div>
         <div id="chat-window">
             <div id="messages"></div>
@@ -51,7 +66,7 @@
         <div class="modal-content">
             <h2 id="winner-txt"></h2>
             <div id="final-scores"></div>
-            <button class="btn-main" onclick="location.reload()">REJOUER</button>
+            <button class="btn-main" onclick="location.reload()">RETOUR AU MENU</button>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>

@@ -23,52 +23,75 @@ socket.on('gameState', updateUI);
 
 function onDragStart(ev) {
     if(!isMyTurn) return ev.preventDefault();
-    ev.dataTransfer.setData("sourceId", ev.target.id);
-    if(ev.target.id === 'deck' && tempDeckValue === null) tempDeckValue = Math.floor(Math.random()*14)-2;
+    ev.dataTransfer.setData("sourceId", ev.target.id === "deck-cont" ? "deck" : "discard");
+    if(ev.target.id === 'deck-cont' && tempDeckValue === null) tempDeckValue = Math.floor(Math.random()*14)-2;
 }
 
 function updateUI(state) {
     isMyTurn = state.currentPlayerId === socket.id;
-    document.getElementById('turn-indicator').innerText = isMyTurn ? "À TOI !" : "Tour de " + state.players[state.currentPlayerId].name;
-    document.getElementById('turn-indicator').style.color = isMyTurn ? "#27ae60" : "white";
+    document.getElementById('turn-indicator').innerText = isMyTurn ? "⭐️ À TOI !" : "Tour de " + state.players[state.currentPlayerId].name;
+    
+    // Alerte Dernier Tour
+    if (state.isLastRound) document.getElementById('last-round-banner').classList.add('show');
 
-    const deckEl = document.getElementById('deck');
-    const discardEl = document.getElementById('discard');
+    // Piles
+    const deckCont = document.getElementById('deck-cont');
+    const discardCont = document.getElementById('discard-cont');
     const lastDisc = state.discard[state.discard.length-1];
 
-    if(tempDeckValue !== null) { deckEl.innerText = tempDeckValue; deckEl.className = `card ${getColorClass(tempDeckValue)} ${selectedFromClick === 'deck' ? 'selected' : ''}`; }
-    else { deckEl.innerText = "?"; deckEl.className = `card back ${selectedFromClick === 'deck' ? 'selected' : ''}`; }
+    if(tempDeckValue !== null) {
+        deckCont.classList.add('is-visible');
+        const front = document.getElementById('deck-val');
+        front.innerText = tempDeckValue;
+        front.className = `card-front ${getColorClass(tempDeckValue)}`;
+    } else {
+        deckCont.classList.remove('is-visible');
+    }
+    deckCont.classList.toggle('selected', selectedFromClick === 'deck');
 
-    discardEl.innerText = lastDisc;
-    discardEl.className = `card ${getColorClass(lastDisc)} ${selectedFromClick === 'discard' ? 'selected' : ''}`;
+    const discFront = document.getElementById('discard-val');
+    discFront.innerText = lastDisc;
+    discFront.className = `card-front ${getColorClass(lastDisc)}`;
+    discardCont.classList.toggle('selected', selectedFromClick === 'discard');
 
-    deckEl.onclick = () => { if(isMyTurn) { selectedFromClick = 'deck'; if(tempDeckValue === null) tempDeckValue = Math.floor(Math.random()*14)-2; updateUI(state); } };
-    discardEl.onclick = () => { if(isMyTurn) { selectedFromClick = 'discard'; tempDeckValue = null; updateUI(state); } };
+    deckCont.onclick = () => { if(isMyTurn) { selectedFromClick = 'deck'; if(tempDeckValue === null) tempDeckValue = Math.floor(Math.random()*14)-2; updateUI(state); } };
+    discardCont.onclick = () => { if(isMyTurn) { selectedFromClick = 'discard'; tempDeckValue = null; updateUI(state); } };
 
+    // Ma Grille
     const gridDiv = document.getElementById('grid'); gridDiv.innerHTML = '';
     state.players[socket.id].grid.forEach((c, i) => {
-        const div = document.createElement('div');
-        if (c.removed) { div.className = 'card removed'; gridDiv.appendChild(div); return; }
-        div.className = `card ${c.isVisible ? getColorClass(c.value) : 'back'}`;
-        div.innerText = c.isVisible ? c.value : '?';
-        div.ondragover = (e) => e.preventDefault();
-        div.ondrop = (e) => { const src = e.dataTransfer.getData("sourceId"); executeSwap(i, src === 'deck' ? tempDeckValue : lastDisc); };
-        div.onclick = () => {
+        const container = document.createElement('div');
+        container.className = `card-container ${c.isVisible ? 'is-visible' : ''} ${c.removed ? 'removed' : ''}`;
+        
+        container.innerHTML = `
+            <div class="card-inner">
+                <div class="card-back">?</div>
+                <div class="card-front ${getColorClass(c.value)}">${c.value}</div>
+            </div>`;
+
+        container.ondragover = (e) => e.preventDefault();
+        container.ondrop = (e) => { 
+            const src = e.dataTransfer.getData("sourceId"); 
+            executeSwap(i, src === 'deck' ? tempDeckValue : lastDisc); 
+        };
+        
+        container.onclick = () => {
             if(!isMyTurn) return;
             if(selectedFromClick) executeSwap(i, selectedFromClick === 'deck' ? tempDeckValue : lastDisc);
             else if(!c.isVisible) socket.emit('playerAction', { type: 'FLIP', roomId: myRoom, index: i });
         };
-        gridDiv.appendChild(div);
+        gridDiv.appendChild(container);
     });
 
+    // Adversaires
     const oppCont = document.getElementById('opponents-container'); oppCont.innerHTML = '';
     Object.values(state.players).forEach(p => {
         if(p.id !== socket.id) {
             const d = document.createElement('div'); d.className = 'opponent-mini';
-            d.innerHTML = `<span>${p.name}</span><div class="mini-grid"></div>`;
+            d.innerHTML = `<span style="font-size:0.7rem;margin-bottom:4px;display:block">${p.name}</span><div class="mini-grid"></div>`;
             p.grid.forEach(c => {
                 const mc = document.createElement('div');
-                if (c.removed) mc.className = 'card-mini removed';
+                if (c.removed) mc.className = 'card-mini removed' ;
                 else { mc.className = `card-mini ${c.isVisible ? getColorClass(c.value) : 'back'}`; mc.innerText = c.isVisible ? c.value : ''; }
                 d.querySelector('.mini-grid').appendChild(mc);
             });
@@ -81,5 +104,5 @@ function executeSwap(idx, val) { socket.emit('playerAction', { type: 'SWAP', roo
 function sendMsg() { const inp = document.getElementById('chat-in'); if(inp.value.trim()) { socket.emit('sendChatMessage', { name: myName, message: inp.value, roomId: myRoom }); inp.value = ''; } }
 socket.on('receiveChatMessage', (d) => { const m = document.getElementById('messages'); m.innerHTML += `<div><b>${d.name}:</b> ${d.message}</div>`; m.scrollTop = m.scrollHeight; });
 function toggleChat() { const w = document.getElementById('chat-window'); w.style.display = (w.style.display === 'flex') ? 'none' : 'flex'; }
-socket.on('gameOver', (res) => { document.getElementById('win-modal').style.display = 'block'; document.getElementById('winner-txt').innerText = "Vainqueur: " + res[0].name; document.getElementById('final-scores').innerHTML = res.map(r => `<p>${r.name}: ${r.score} pts</p>`).join(''); });
+socket.on('gameOver', (res) => { document.getElementById('win-modal').style.display = 'block'; document.getElementById('winner-txt').innerText = "🏆 GAGNANT : " + res[0].name; document.getElementById('final-scores').innerHTML = res.map(r => `<p>${r.name}: ${r.score} pts</p>`).join(''); });
 function getColorClass(v) { if(v < 0) return 'cat-neg'; if(v === 0) return 'cat-zero'; if(v <= 4) return 'cat-low'; if(v <= 8) return 'cat-mid'; return 'cat-high'; }
