@@ -33,3 +33,18 @@ body { margin: 0; background: var(--dark); color: white; font-family: sans-serif
 
 .cat-neg { background: #00008B; color: white; } .cat-zero { background: #87CEEB; }
 .cat-low { background: #27ae60; color: white; } .cat-mid { background: #f1c40f; } .cat-high { background: #e74c3c; color: white; }
+
+/* Ajoute cela à ton fichier CSS */
+.card.removed {
+    visibility: hidden; /* La carte disparaît mais garde sa place dans la grille */
+    pointer-events: none;
+}
+
+/* Optionnel : un effet de fondu avant disparition */
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0); }
+}
+.card.removing {
+    animation: fadeOut 0.5s forwards;
+}
