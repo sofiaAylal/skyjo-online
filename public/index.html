@@ -13,7 +13,7 @@
     <div id="main-menu" class="full-screen">
         <h1>SKYJO <span>Pro</span></h1>
         <div class="card-ui">
-            <input type="text" id="player-name" placeholder="Pseudo">
+            <input type="text" id="player-name" placeholder="Ton pseudo...">
             <input type="text" id="room-input" placeholder="Code Salon">
             <button class="btn-main" onclick="join()">REJOINDRE</button>
         </div>
@@ -22,23 +22,23 @@
     <div id="lobby-container" class="full-screen" style="display:none;">
         <div class="card-ui">
             <h2 id="lobby-title">Salon</h2>
-            <ul id="player-list"></ul>
-            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER</button>
+            <ul id="player-list" style="list-style:none; padding:0; margin: 10px 0; color: #555;"></ul>
+            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LA PARTIE</button>
         </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator">En attente...</div>
+        <div id="turn-indicator" style="font-weight:bold; margin-top:5px;">Chargement...</div>
         <div id="opponents-container"></div>
         
         <div class="table-center">
-            <div id="deck-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
+            <div id="deck-cont" class="card-container">
                 <div class="card-inner">
                     <div class="card-back">?</div>
                     <div id="deck-val" class="card-front"></div>
                 </div>
             </div>
-            <div id="discard-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
+            <div id="discard-cont" class="card-container">
                 <div class="card-inner" style="transform: rotateY(180deg);">
                     <div class="card-back"></div>
                     <div id="discard-val" class="card-front"></div>
@@ -50,18 +50,18 @@
 
         <div id="chat-tab" onclick="toggleChat()">💬 Chat</div>
         <div id="chat-window">
-            <div id="messages"></div>
-            <div class="chat-bar">
-                <input type="text" id="chat-in"><button onclick="sendMsg()">OK</button>
+            <div id="messages" style="flex:1; overflow-y:auto; font-size:0.8rem; margin-bottom:5px;"></div>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="chat-in" style="flex:1; padding:5px;"><button onclick="sendMsg()">OK</button>
             </div>
         </div>
     </div>
 
-    <div id="win-modal" class="modal">
-        <div class="modal-content">
+    <div id="win-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9000; align-items:center; justify-content:center;">
+        <div class="modal-content" style="background:white; color:#333; padding:20px; border-radius:15px; width:80%; max-width:300px; text-align:center;">
             <h2 id="winner-txt"></h2>
             <div id="final-scores"></div>
-            <button class="btn-main" onclick="location.reload()">REJOUER</button>
+            <button class="btn-main" onclick="location.reload()" style="margin-top:10px;">REJOUER</button>
         </div>
     </div>
 

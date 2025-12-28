@@ -35,7 +35,6 @@ function updateUI(state) {
     isMyTurn = state.currentPlayerId === socket.id;
     document.getElementById('turn-indicator').innerText = isMyTurn ? "⭐️ À TOI !" : "Tour de " + state.players[state.currentPlayerId].name;
     
-    // Popup Dernier Tour (5 secondes)
     if (state.isLastRound && !lastRoundFired) {
         const popup = document.getElementById('last-round-popup');
         popup.classList.add('show');
@@ -75,7 +74,6 @@ function updateUI(state) {
         gridDiv.appendChild(container);
     });
 
-    // Adversaires : Affichage amélioré (Scroll horizontal si besoin)
     const opp = document.getElementById('opponents-container'); opp.innerHTML = '';
     Object.values(state.players).forEach(p => {
         if(p.id !== socket.id) {
@@ -104,4 +102,3 @@ socket.on('gameOver', (res) => {
     playSnd('win');
 });
 function getColorClass(v) { if(v < 0) return 'cat-neg'; if(v === 0) return 'cat-zero'; if(v <= 4) return 'cat-low'; if(v <= 8) return 'cat-mid'; return 'cat-high'; }
-function onDragStart(ev) { if(!isMyTurn) return ev.preventDefault(); ev.dataTransfer.setData("sourceId", ev.target.id === "deck-cont" ? "deck" : "discard"); }
