@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Skyjo Pro Online</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-    <div id="last-round-banner">⚠️ DERNIER TOUR ! Quelqu'un a fini sa grille !</div>
+    <div id="last-round-banner">⚠️ DERNIER TOUR !</div>
 
     <div id="main-menu" class="full-screen">
         <h1>SKYJO <span>Pro</span></h1>
@@ -31,22 +32,16 @@
         <div id="opponents-container"></div>
         
         <div class="table-center">
-            <div class="pile-box">
-                <span>Pioche</span>
-                <div id="deck-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
-                    <div class="card-inner">
-                        <div class="card-back">?</div>
-                        <div id="deck-val" class="card-front"></div>
-                    </div>
+            <div id="deck-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
+                <div class="card-inner">
+                    <div class="card-back">?</div>
+                    <div id="deck-val" class="card-front"></div>
                 </div>
             </div>
-            <div class="pile-box">
-                <span>Défausse</span>
-                <div id="discard-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
-                    <div class="card-inner" style="transform: rotateY(180deg);">
-                        <div class="card-back"></div>
-                        <div id="discard-val" class="card-front"></div>
-                    </div>
+            <div id="discard-cont" class="card-container" draggable="true" ondragstart="onDragStart(event)">
+                <div class="card-inner" style="transform: rotateY(180deg);">
+                    <div class="card-back"></div>
+                    <div id="discard-val" class="card-front"></div>
                 </div>
             </div>
         </div>
@@ -69,6 +64,7 @@
             <button class="btn-main" onclick="location.reload()">RETOUR AU MENU</button>
         </div>
     </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
