@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Skyjo Pro Online</title>
+    <title>Skyjo Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="main-menu" class="full-screen">
         <h1>SKYJO <span>Pro</span></h1>
         <div class="card-ui">
-            <input type="text" id="player-name" placeholder="Ton pseudo...">
-            <input type="text" id="room-input" placeholder="Code du Salon">
+            <input type="text" id="player-name" placeholder="Pseudo">
+            <input type="text" id="room-input" placeholder="Code Salon">
             <button class="btn-main" onclick="join()">REJOINDRE</button>
         </div>
     </div>
@@ -20,27 +20,24 @@
         <div class="card-ui">
             <h2 id="lobby-title">Salon</h2>
             <ul id="player-list"></ul>
-            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LA PARTIE</button>
+            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER</button>
         </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator">Chargement...</div>
+        <div id="turn-indicator">Attente...</div>
         <div id="opponents-container"></div>
-        
         <div class="table-center">
             <div class="pile-box">
                 <span>Pioche</span>
-                <div id="deck" class="card back" draggable="true" ondragstart="onDrag(event)">?</div>
+                <div id="deck" class="card back" draggable="true" ondragstart="onDragStart(event)">?</div>
             </div>
             <div class="pile-box">
                 <span>Défausse</span>
-                <div id="discard" class="card" draggable="true" ondragstart="onDrag(event)"></div>
+                <div id="discard" class="card" draggable="true" ondragstart="onDragStart(event)"></div>
             </div>
         </div>
-
         <div id="grid" class="grid"></div>
-
         <div id="chat-tab" onclick="toggleChat()">💬 Chat</div>
         <div id="chat-window">
             <div id="messages"></div>
@@ -50,6 +47,13 @@
         </div>
     </div>
 
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="winner-txt"></h2>
+            <div id="final-scores"></div>
+            <button class="btn-main" onclick="location.reload()">REJOUER</button>
+        </div>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>

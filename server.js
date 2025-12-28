@@ -10,24 +10,31 @@ const io = new Server(server);
 app.use(express.static('public'));
 
 mongoose.connect(process.env.MONGO_URI).catch(err => console.log(err));
-const Score = mongoose.model('Score', { name: String, wins: { type: Number, default: 0 } });
 
 let rooms = {};
+
+function createDeck() {
+    let deck = [];
+    for(let i=0; i<5; i++) deck.push(-2);
+    for(let i=0; i<10; i++) deck.push(-1);
+    for(let i=0; i<15; i++) deck.push(0);
+    for(let v=1; v<=12; v++) { for(let i=0; i<10; i++) deck.push(v); }
+    return deck.sort(() => Math.random() - 0.5);
+}
 
 io.on('connection', (socket) => {
     socket.on('joinRoom', ({ name, roomId }) => {
         const room = roomId.toUpperCase();
         socket.join(room);
-        if (!rooms[room]) rooms[room] = { players: {}, status: 'Lobby', deck: [], discard: [], turnIndex: 0, isLastRound: false };
-        
-        rooms[room].players[socket.id] = { id: socket.id, name, grid: [], score: 0 };
+        if (!rooms[room]) rooms[room] = { players: {}, status: 'Lobby', deck: [], discard: [], turnIndex: 0, isLastRound: false, finisherId: null };
+        rooms[room].players[socket.id] = { id: socket.id, name, grid: [] };
         io.to(room).emit('updatePlayers', Object.values(rooms[room].players));
     });
 
     socket.on('startGame', (roomId) => {
         const r = rooms[roomId.toUpperCase()];
         if (!r) return;
-        r.deck = Array.from({length:150}, (_,i) => (i%15)-2).sort(() => Math.random()-0.5);
+        r.deck = createDeck();
         Object.keys(r.players).forEach(id => {
             r.players[id].grid = Array.from({length:12}, () => ({ value: r.deck.pop(), isVisible: false }));
             r.players[id].grid[0].isVisible = r.players[id].grid[1].isVisible = true;
@@ -44,17 +51,29 @@ io.on('connection', (socket) => {
 
         const p = r.players[socket.id];
         if (data.type === 'SWAP') {
-            const oldVal = p.grid[data.index].value;
+            r.discard.push(p.grid[data.index].value);
             p.grid[data.index] = { value: data.newValue, isVisible: true };
-            r.discard.push(oldVal);
         } else {
             p.grid[data.index].isVisible = true;
+        }
+
+        // Détection de fin de manche
+        if (!r.isLastRound && p.grid.every(c => c.isVisible)) {
+            r.isLastRound = true;
+            r.finisherId = socket.id;
         }
 
         const ids = Object.keys(r.players);
         r.turnIndex = (r.turnIndex + 1) % ids.length;
         r.currentPlayerId = ids[r.turnIndex];
-        io.to(data.roomId.toUpperCase()).emit('gameState', r);
+
+        if (r.isLastRound && r.currentPlayerId === r.finisherId) {
+            const scores = ids.map(id => ({ name: r.players[id].name, score: r.players[id].grid.reduce((s, c) => s + c.value, 0) }));
+            io.to(data.roomId.toUpperCase()).emit('gameOver', scores.sort((a,b) => a.score - b.score));
+            delete rooms[data.roomId.toUpperCase()];
+        } else {
+            io.to(data.roomId.toUpperCase()).emit('gameState', r);
+        }
     });
 
     socket.on('sendChatMessage', (data) => {
