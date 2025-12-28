@@ -19,7 +19,7 @@ function join() {
 }
 
 socket.on('updatePlayers', (p) => {
-    document.getElementById('player-list').innerHTML = p.map(x => `<li>👤 ${x.name}</li>`).join('');
+    document.getElementById('player-list').innerHTML = p.map(x => `<li style="margin:5px 0">👤 ${x.name}</li>`).join('');
     if(p.length >= 2 && p[0].id === socket.id) document.getElementById('start-btn').style.display = 'block';
 });
 
@@ -49,13 +49,13 @@ function updateUI(state) {
 
     if(tempDeckValue !== null) {
         deckCont.classList.add('is-visible');
-        const f = document.getElementById('deck-val');
-        f.innerText = tempDeckValue; f.className = `card-front ${getColorClass(tempDeckValue)}`;
+        document.getElementById('deck-val').innerText = tempDeckValue;
+        document.getElementById('deck-val').className = `card-front ${getColorClass(tempDeckValue)}`;
     } else { deckCont.classList.remove('is-visible'); }
     
     deckCont.classList.toggle('selected', selectedFromClick === 'deck');
-    const df = document.getElementById('discard-val');
-    df.innerText = lastD; df.className = `card-front ${getColorClass(lastD)}`;
+    document.getElementById('discard-val').innerText = lastD;
+    document.getElementById('discard-val').className = `card-front ${getColorClass(lastD)}`;
     discardCont.classList.toggle('selected', selectedFromClick === 'discard');
 
     deckCont.onclick = () => { if(isMyTurn) { selectedFromClick = 'deck'; if(tempDeckValue === null) { tempDeckValue = Math.floor(Math.random()*14)-2; playSnd('flip'); } updateUI(state); } };
@@ -68,8 +68,13 @@ function updateUI(state) {
         container.innerHTML = `<div class="card-inner"><div class="card-back">?</div><div class="card-front ${getColorClass(c.value)}">${c.value}</div></div>`;
         container.onclick = () => {
             if(!isMyTurn) return;
-            if(selectedFromClick) executeSwap(i, selectedFromClick === 'deck' ? tempDeckValue : lastD);
-            else if(!c.isVisible) { socket.emit('playerAction', { type: 'FLIP', roomId: myRoom, index: i }); playSnd('flip'); }
+            if(selectedFromClick) {
+                socket.emit('playerAction', { type: 'SWAP', roomId: myRoom, index: i, newValue: selectedFromClick === 'deck' ? tempDeckValue : lastD });
+                selectedFromClick = null; tempDeckValue = null; playSnd('flip');
+            } else if(!c.isVisible) { 
+                socket.emit('playerAction', { type: 'FLIP', roomId: myRoom, index: i }); 
+                playSnd('flip'); 
+            }
         };
         gridDiv.appendChild(container);
     });
@@ -81,7 +86,7 @@ function updateUI(state) {
             d.innerHTML = `<div style="font-size:0.6rem;text-align:center">${p.name}</div><div class="mini-grid"></div>`;
             p.grid.forEach(c => {
                 const mc = document.createElement('div');
-                if (c.removed) mc.className = 'card-mini removed';
+                if (c.removed) mc.className = 'card-mini';
                 else { mc.className = `card-mini ${c.isVisible ? getColorClass(c.value) : 'back'}`; mc.innerText = c.isVisible ? c.value : ''; }
                 d.querySelector('.mini-grid').appendChild(mc);
             });
@@ -90,7 +95,6 @@ function updateUI(state) {
     });
 }
 
-function executeSwap(idx, val) { socket.emit('playerAction', { type: 'SWAP', roomId: myRoom, index: idx, newValue: val }); selectedFromClick = null; tempDeckValue = null; playSnd('flip'); }
 function sendMsg() { const i = document.getElementById('chat-in'); if(i.value.trim()) { socket.emit('sendChatMessage', { name: myName, message: i.value, roomId: myRoom }); i.value = ''; } }
 socket.on('receiveChatMessage', (d) => { const m = document.getElementById('messages'); m.innerHTML += `<div><b>${d.name}:</b> ${d.message}</div>`; m.scrollTop = m.scrollHeight; });
 function toggleChat() { const w = document.getElementById('chat-window'); w.style.display = (w.style.display === 'flex') ? 'none' : 'flex'; }

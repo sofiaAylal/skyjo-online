@@ -9,7 +9,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 app.use(express.static('public'));
 
-mongoose.connect(process.env.MONGO_URI).catch(err => console.log(err));
+mongoose.connect(process.env.MONGO_URI).catch(err => console.log("Erreur Mongo:", err));
 const Score = mongoose.model('Score', { name: String, wins: { type: Number, default: 0 } });
 
 let rooms = {};
@@ -24,7 +24,7 @@ function createDeck() {
 }
 
 io.on('connection', (socket) => {
-    socket.on('joinRoom', async ({ name, roomId }) => {
+    socket.on('joinRoom', ({ name, roomId }) => {
         const room = roomId.toUpperCase();
         socket.join(room);
         if (!rooms[room]) rooms[room] = { players: {}, status: 'Lobby', deck: [], discard: [], turnIndex: 0, isLastRound: false, finisherId: null };
@@ -58,14 +58,19 @@ io.on('connection', (socket) => {
             p.grid[data.index].isVisible = true;
         }
 
-        // COMBO COLONNES
         for (let col = 0; col < 4; col++) {
-            let i1 = col, i2 = col + 4, i3 = col + 8;
-            if (p.grid[i1].isVisible && p.grid[i2].isVisible && p.grid[i3].isVisible && !p.grid[i1].removed) {
-                if (p.grid[i1].value === p.grid[i2].value && p.grid[i2].value === p.grid[i3].value) {
-                    p.grid[i1].removed = p.grid[i2].removed = p.grid[i3].removed = true;
-                    p.grid[i1].value = p.grid[i2].value = p.grid[i3].value = 0;
-                }
+            let idxs = [col, col + 4, col + 8];
+            if (idxs.every(i => p.grid[i].isVisible && !p.grid[i].removed) &&
+                p.grid[idxs[0]].value === p.grid[idxs[1]].value && p.grid[idxs[1]].value === p.grid[idxs[2]].value) {
+                idxs.forEach(i => { p.grid[i].removed = true; p.grid[i].value = 0; });
+            }
+        }
+        for (let row = 0; row < 3; row++) {
+            let start = row * 4;
+            let idxs = [start, start + 1, start + 2, start + 3];
+            if (idxs.every(i => p.grid[i].isVisible && !p.grid[i].removed) &&
+                p.grid[idxs[0]].value === p.grid[idxs[1]].value && p.grid[idxs[1]].value === p.grid[idxs[2]].value && p.grid[idxs[2]].value === p.grid[idxs[3]].value) {
+                idxs.forEach(i => { p.grid[i].removed = true; p.grid[i].value = 0; });
             }
         }
 

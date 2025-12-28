@@ -1,85 +1,62 @@
 :root { --blue: #2c3e50; --green: #27ae60; --dark: #1a1a1a; --gold: #f1c40f; }
 * { box-sizing: border-box; touch-action: manipulation; }
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--dark); color: white; font-family: sans-serif; overflow: hidden; }
 
-html, body { 
-    margin: 0; padding: 0; width: 100%; height: 100%; 
-    background: var(--dark); color: white; font-family: sans-serif; 
-    overflow: hidden; 
-}
-
-/* --- ÉCRANS DE DÉPART (Menu & Lobby) --- */
 .full-screen { 
-    height: 100vh; width: 100vw;
-    display: flex; flex-direction: column; 
+    height: 100%; width: 100%; display: flex; flex-direction: column; 
     align-items: center; justify-content: center; 
     background: radial-gradient(circle, #2c3e50, #000);
-    position: absolute; top: 0; left: 0; z-index: 5000;
+    position: fixed; top: 0; left: 0; z-index: 9999;
 }
-.card-ui { 
-    background: white; padding: 25px; border-radius: 12px; 
-    width: 90%; max-width: 320px; 
-    display: flex; flex-direction: column; gap: 15px; 
-    color: #333; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-.card-ui input { padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
-.btn-main { 
-    background: var(--green); color: white; border: none; 
-    padding: 15px; border-radius: 8px; font-weight: bold; 
-    cursor: pointer; width: 100%; transition: 0.2s;
-}
+.card-ui { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; color: #333; text-align: center; }
+.btn-main { background: var(--green); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-/* --- ZONE DE JEU --- */
 #game-container { 
-    height: 100vh; width: 100vw;
-    display: flex; flex-direction: column; 
-    align-items: center; justify-content: space-between; 
-    padding: 10px; position: relative;
+    height: 100vh; width: 100vw; display: flex; flex-direction: column; 
+    align-items: center; position: relative;
 }
 
-#last-round-popup {
-    position: fixed; top: 20px; right: -300px; width: 250px; 
-    background: var(--gold); color: black; padding: 15px; 
-    border-radius: 10px 0 0 10px; font-weight: bold; z-index: 6000;
-    box-shadow: -5px 5px 15px rgba(0,0,0,0.3); transition: right 0.5s ease;
+/* Zone autorisant le défilement si la grille est trop longue */
+#game-scroll-area {
+    width: 100%; flex: 1; overflow-y: auto; 
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 0 80px 0; /* padding bas pour ne pas cacher par le bouton chat */
 }
+
+#turn-indicator { padding: 10px 0; font-weight: bold; z-index: 10; }
+
+#last-round-popup { position: fixed; top: 20px; right: -300px; width: 220px; background: var(--gold); color: black; padding: 12px; border-radius: 10px 0 0 10px; font-weight: bold; z-index: 8000; transition: right 0.5s ease; }
 #last-round-popup.show { right: 0; }
 
-#opponents-container { 
-    display: flex; gap: 10px; width: 100%; 
-    overflow-x: auto; padding: 5px; scrollbar-width: none;
-}
-.opponent-mini { background: rgba(255,255,255,0.1); padding: 6px; border-radius: 8px; flex-shrink: 0; }
+#opponents-container { display: flex; gap: 8px; width: 100%; overflow-x: auto; padding: 5px; margin-bottom: 10px; flex-shrink: 0; }
+.opponent-mini { background: rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; flex-shrink: 0; }
 .mini-grid { display: grid; grid-template-columns: repeat(4, 15px); gap: 2px; }
 .card-mini { width: 15px; height: 22px; border-radius: 2px; }
 
-.table-center { display: flex; gap: 20px; margin: 10px 0; }
+.table-center { display: flex; gap: 20px; margin: 15px 0; flex-shrink: 0; }
 .card-container { width: 60px; height: 85px; perspective: 1000px; }
-
-.grid { display: grid; grid-template-columns: repeat(4, 70px); gap: 8px; margin-bottom: 70px; }
-
-/* Animation 3D */
 .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
 .is-visible .card-inner { transform: rotateY(180deg); }
-.card-front, .card-back { 
-    position: absolute; width: 100%; height: 100%; 
-    backface-visibility: hidden; border-radius: 6px; border: 2px solid white;
-    display: flex; align-items: center; justify-content: center; font-weight: bold;
-}
+.card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 .card-back { background: var(--blue); color: white; z-index: 2; }
 .card-front { background: white; color: #333; transform: rotateY(180deg); z-index: 1; }
-.removed { transform: translateY(-50px) scale(0); opacity: 0; pointer-events: none; transition: 0.6s; }
+.removed { transform: translateY(-80px) scale(0); opacity: 0; pointer-events: none; transition: 0.8s; }
 
-/* Chat */
+.grid { display: grid; grid-template-columns: repeat(4, 70px); gap: 8px; margin-top: 10px; }
+
 #chat-tab { position: fixed; bottom: 15px; right: 15px; background: #333; padding: 10px 15px; border-radius: 25px; z-index: 1000; border: 1px solid #555; }
-#chat-window { position: fixed; bottom: 70px; right: 15px; width: 280px; height: 250px; background: rgba(30,30,30,0.95); display: none; flex-direction: column; padding: 10px; border-radius: 12px; z-index: 1001; border: 1px solid #444; }
+#chat-window { position: fixed; bottom: 70px; right: 15px; width: 280px; height: 220px; background: rgba(30,30,30,0.95); display: none; flex-direction: column; padding: 10px; border-radius: 12px; z-index: 1001; border: 1px solid #444; }
 
-@media (max-width: 600px) {
-    .grid { grid-template-columns: repeat(4, 21vw); gap: 5px; }
-    .card-container { width: 21vw; height: 31vw; }
+@media (max-width: 600px) { 
+    .grid { grid-template-columns: repeat(4, 21vw); gap: 5px; } 
+    .card-container { width: 21vw; height: 31vw; } 
 }
 
-.cat-neg { background: #00008B !important; color: white; }
-.cat-zero { background: #87CEEB !important; }
-.cat-low { background: #27ae60 !important; color: white; }
-.cat-mid { background: #f1c40f !important; }
+.cat-neg { background: #00008B !important; color: white; } 
+.cat-zero { background: #87CEEB !important; } 
+.cat-low { background: #27ae60 !important; color: white; } 
+.cat-mid { background: #f1c40f !important; } 
 .cat-high { background: #e74c3c !important; color: white; }
+
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
+.modal-content { background: white; color: #333; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; }

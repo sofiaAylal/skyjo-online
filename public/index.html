@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Skyjo Pro</title>
+    <title>Skyjo Online</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -22,46 +22,47 @@
     <div id="lobby-container" class="full-screen" style="display:none;">
         <div class="card-ui">
             <h2 id="lobby-title">Salon</h2>
-            <ul id="player-list" style="list-style:none; padding:0; margin: 10px 0; color: #555;"></ul>
+            <ul id="player-list"></ul>
             <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LA PARTIE</button>
         </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator" style="font-weight:bold; margin-top:5px;">Chargement...</div>
-        <div id="opponents-container"></div>
+        <div id="turn-indicator">Chargement...</div>
         
-        <div class="table-center">
-            <div id="deck-cont" class="card-container">
-                <div class="card-inner">
-                    <div class="card-back">?</div>
-                    <div id="deck-val" class="card-front"></div>
+        <div id="game-scroll-area">
+            <div id="opponents-container"></div>
+            
+            <div class="table-center">
+                <div id="deck-cont" class="card-container">
+                    <div class="card-inner">
+                        <div class="card-back">?</div>
+                        <div id="deck-val" class="card-front"></div>
+                    </div>
+                </div>
+                <div id="discard-cont" class="card-container">
+                    <div class="card-inner" style="transform: rotateY(180deg);">
+                        <div class="card-back"></div>
+                        <div id="discard-val" class="card-front"></div>
+                    </div>
                 </div>
             </div>
-            <div id="discard-cont" class="card-container">
-                <div class="card-inner" style="transform: rotateY(180deg);">
-                    <div class="card-back"></div>
-                    <div id="discard-val" class="card-front"></div>
-                </div>
-            </div>
-        </div>
 
-        <div id="grid" class="grid"></div>
+            <div id="grid" class="grid"></div>
+        </div>
 
         <div id="chat-tab" onclick="toggleChat()">💬 Chat</div>
         <div id="chat-window">
-            <div id="messages" style="flex:1; overflow-y:auto; font-size:0.8rem; margin-bottom:5px;"></div>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="chat-in" style="flex:1; padding:5px;"><button onclick="sendMsg()">OK</button>
-            </div>
+            <div id="messages"></div>
+            <div class="chat-bar"><input type="text" id="chat-in"><button onclick="sendMsg()">OK</button></div>
         </div>
     </div>
 
-    <div id="win-modal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9000; align-items:center; justify-content:center;">
-        <div class="modal-content" style="background:white; color:#333; padding:20px; border-radius:15px; width:80%; max-width:300px; text-align:center;">
+    <div id="win-modal" class="modal">
+        <div class="modal-content">
             <h2 id="winner-txt"></h2>
             <div id="final-scores"></div>
-            <button class="btn-main" onclick="location.reload()" style="margin-top:10px;">REJOUER</button>
+            <button class="btn-main" onclick="location.reload()">REJOUER</button>
         </div>
     </div>
 
