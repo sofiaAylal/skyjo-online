@@ -2,16 +2,28 @@
 * { box-sizing: border-box; touch-action: manipulation; }
 html, body { margin: 0; padding: 0; width: 100%; background: linear-gradient(135deg, #1e3a5f 0%, #2d5f4f 50%, #3a7d6e 100%); color: white; font-family: sans-serif; overflow-x: hidden; }
 
+/* Accessible visually-hidden utility for screen-reader labels */
+.visually-hidden {
+    position: absolute !important;
+    height: 1px; width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    white-space: nowrap;
+}
+
 .full-screen { 
     height: 100%; width: 100%; display: flex; flex-direction: column; 
     align-items: center; justify-content: center; 
     background: linear-gradient(135deg, #1e3a5f 0%, #2d5f4f 50%, #3a7d6e 100%);
     position: fixed; top: 0; left: 0; z-index: 9999;
+    overflow-y: auto; /* allow internal scroll on small screens */
 }
 .card-ui { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; color: #333; text-align: center; }
 .btn-main { background: var(--green); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 .btn-secondary { background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9em; }
 .btn-secondary:hover { background: #2980b9; }
+
+.btn-main:focus, .btn-secondary:focus { outline: 3px solid rgba(255,255,255,0.14); outline-offset: 3px; }
 
 #game-container { 
     height: 100vh; width: 100vw; display: flex; flex-direction: column; 
@@ -36,13 +48,36 @@ html, body { margin: 0; padding: 0; width: 100%; background: linear-gradient(135
 .card-mini { width: 15px; height: 22px; border-radius: 2px; }
 
 .table-center { display: flex; gap: 20px; margin: 15px 0; flex-shrink: 0; }
-.card-container { width: 60px; height: 85px; perspective: 1000px; transition: all 0.3s ease; }
+
+.card-container { width: 60px; height: 85px; perspective: 1200px; transition: transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease; touch-action: manipulation; cursor: pointer; }
 .card-container.selected { 
-    transform: scale(1.15); 
-    filter: drop-shadow(0 0 12px #f1c40f) drop-shadow(0 0 20px rgba(241, 196, 15, 0.8));
-    box-shadow: 0 0 15px rgba(241, 196, 15, 0.9), inset 0 0 10px rgba(241, 196, 15, 0.5);
+    transform: scale(1.12) translateY(-4px);
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.35));
+    box-shadow: 0 10px 18px rgba(0,0,0,0.35), 0 0 12px rgba(241,196,15,0.6) inset;
 }
-.card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+.card-container:active { transform: scale(0.98); }
+.card-container:focus-visible { outline: 3px solid rgba(241,196,15,0.95); outline-offset: 4px; }
+.card-inner { position: relative; width: 100%; height: 100%; transition: transform 420ms cubic-bezier(.2,.9,.2,1); transform-style: preserve-3d; }
+
+/* Flip face polish */
+.card-front, .card-back { backface-visibility: hidden; border-radius: 6px; transition: box-shadow 220ms ease, transform 220ms ease; }
+.card-back { transform: rotateY(0deg); }
+.card-front { transform: rotateY(180deg); }
+.is-visible .card-inner { transform: rotateY(180deg); }
+.card-front { box-shadow: inset 0 -6px 12px rgba(0,0,0,0.06); }
+.card-back { box-shadow: inset 0 -4px 8px rgba(0,0,0,0.08); }
+
+/* subtle hover effect on desktop */
+@media (hover: hover) and (pointer: fine) {
+    .card-container:hover { transform: translateY(-3px) scale(1.03); }
+}
+
+/* Improve touch target by adding a gentle padding area for taps */
+.card-container::after {
+    content: '';
+    position: absolute;
+    inset: -6px; /* expands tap area */
+}
 .is-visible .card-inner { transform: rotateY(180deg); }
 .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 6px; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 .card-back { background: var(--blue); color: white; z-index: 2; }
@@ -55,9 +90,53 @@ html, body { margin: 0; padding: 0; width: 100%; background: linear-gradient(135
 #chat-window { position: fixed; bottom: 70px; right: 15px; width: 280px; height: 220px; background: rgba(30,30,30,0.95); display: none; flex-direction: column; padding: 10px; border-radius: 12px; z-index: 1001; border: 1px solid #444; }
 
 @media (max-width: 600px) { 
-    .grid { grid-template-columns: repeat(4, 21vw); gap: 5px; } 
-    .card-container { width: 21vw; height: 31vw; } 
+    .grid { grid-template-columns: repeat(4, 22vw); gap: 6px; } 
+    .card-container { width: 22vw; height: 33vw; }
+    .btn-main, .btn-secondary { padding: 16px; font-size: 1.02rem; }
+    .card-ui { padding: 18px; }
+    /* make full-screen overlays scrollable and non-blocking on small screens */
+    .full-screen { position: absolute; top: 0; left: 0; max-height: 100vh; }
+    .modal { align-items: flex-start; padding-top: 8vh; }
+    .modal-content { max-height: 84vh; overflow-y: auto; }
 }
+
+/* Ensure card-ui panels are scrollable on small screens */
+@media (max-width: 600px) {
+    .card-ui { max-height: 72vh; overflow-y: auto; }
+}
+
+/* Extra small phones */
+@media (max-width: 420px) {
+    .grid { grid-template-columns: repeat(4, 23vw); gap: 6px; }
+    .card-container { width: 23vw; height: 35vw; }
+}
+
+/* Respect user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .card-inner, .card-container, .full-screen { transition: none !important; }
+}
+
+/* Pulse highlight for focused/scrolled element */
+.pulse {
+    animation: pulseGlow 720ms ease-out;
+}
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0px rgba(241,196,15,0.0); transform: scale(1.06); }
+    40% { box-shadow: 0 0 18px rgba(241,196,15,0.75); transform: scale(1.12); }
+    100% { box-shadow: 0 0 8px rgba(241,196,15,0.45); transform: scale(1.06); }
+}
+
+/* Reduced visuals class applied to body when battery/network is low */
+body.reduce-visuals .card-container.selected,
+body.reduce-visuals .card-container,
+body.reduce-visuals .card-front,
+body.reduce-visuals .card-back {
+    filter: none !important;
+    box-shadow: none !important;
+}
+body.reduce-visuals .card-inner,
+body.reduce-visuals .card-container,
+body.reduce-visuals .full-screen { transition: none !important; }
 
 .cat-neg { background: #00008B !important; color: white; } 
 .cat-zero { background: #87CEEB !important; } 

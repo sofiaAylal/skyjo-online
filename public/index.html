@@ -8,39 +8,42 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
+    <a href="#main-menu" class="visually-hidden skip-link">Aller au menu principal</a>
     <div id="last-round-popup">⚠️ DERNIER TOUR !</div>
 
-    <div id="main-menu" class="full-screen">
+    <div id="main-menu" class="full-screen" role="main">
         <h1>SKYJO <span>ONLINE</span></h1>
         <div class="card-ui">
-            <input type="text" id="player-name" placeholder="Ton pseudo...">
-            <input type="text" id="room-input" placeholder="Code Salon">
-            <button class="btn-main" onclick="join()">REJOINDRE</button>
-            <button class="btn-secondary" onclick="showScoreboard()">🏆 MEILLEURS SCORES</button>
+            <label class="visually-hidden" for="player-name">Pseudo</label>
+            <input type="text" id="player-name" placeholder="Ton pseudo..." aria-label="Ton pseudo">
+            <label class="visually-hidden" for="room-input">Code du salon</label>
+            <input type="text" id="room-input" placeholder="Code Salon" aria-label="Code salon">
+            <button class="btn-main" onclick="join()" aria-label="Rejoindre le salon">REJOINDRE</button>
+            <button class="btn-secondary" onclick="showScoreboard()" aria-label="Afficher le classement">🏆 MEILLEURS SCORES</button>
         </div>
     </div>
 
-    <div id="scoreboard-container" class="full-screen" style="display:none;">
+    <div id="scoreboard-container" class="full-screen" style="display:none;" role="region" aria-labelledby="scoreboard-title">
         <div class="card-ui" style="max-width: 400px;">
-            <h2>🏆 TOP 5 MEILLEURS SCORES</h2>
-            <ul id="scoreboard-list" style="text-align: left; list-style: none; padding: 0; margin: 15px 0;">
+            <h2 id="scoreboard-title">🏆 TOP 5 MEILLEURS SCORES</h2>
+            <ul id="scoreboard-list" role="list" style="text-align: left; list-style: none; padding: 0; margin: 15px 0;">
             </ul>
-            <button class="btn-main" onclick="hideScoreboard()">RETOUR</button>
+            <button class="btn-main" onclick="hideScoreboard()" aria-label="Retour">RETOUR</button>
         </div>
     </div>
 
-    <div id="lobby-container" class="full-screen" style="display:none;">
+    <div id="lobby-container" class="full-screen" style="display:none;" role="region" aria-labelledby="lobby-title">
         <div class="card-ui">
             <h2 id="lobby-title">Salon</h2>
-            <ul id="player-list"></ul>
-            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()">LANCER LA PARTIE</button>
+            <ul id="player-list" aria-live="polite"></ul>
+            <button id="start-btn" class="btn-main" style="display:none;" onclick="requestStart()" aria-label="Lancer la partie">LANCER LA PARTIE</button>
         </div>
     </div>
 
     <div id="game-container" style="display:none;">
-        <div id="turn-indicator">Chargement...</div>
+        <div id="turn-indicator" aria-live="polite">Chargement...</div>
         
-        <div id="game-scroll-area">
+        <div id="game-scroll-area" role="region" aria-label="Zone de jeu">
             <div id="opponents-container"></div>
             
             <div class="table-center">
@@ -61,10 +64,10 @@
             <div id="grid" class="grid"></div>
         </div>
 
-        <div id="chat-tab" onclick="toggleChat()">💬 Chat</div>
-        <div id="chat-window">
-            <div id="messages"></div>
-            <div class="chat-bar"><input type="text" id="chat-in"><button onclick="sendMsg()">OK</button></div>
+        <div id="chat-tab" onclick="toggleChat()" role="button" aria-label="Ouvrir chat">💬 Chat</div>
+        <div id="chat-window" aria-hidden="true">
+            <div id="messages" role="log" aria-live="polite" aria-atomic="false"></div>
+            <div class="chat-bar"><label class="visually-hidden" for="chat-in">Message</label><input type="text" id="chat-in" aria-label="Écrire un message"><button onclick="sendMsg()" aria-label="Envoyer">OK</button></div>
         </div>
     </div>
 
