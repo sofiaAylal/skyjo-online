@@ -16,6 +16,16 @@
             <input type="text" id="player-name" placeholder="Ton pseudo...">
             <input type="text" id="room-input" placeholder="Code Salon">
             <button class="btn-main" onclick="join()">REJOINDRE</button>
+            <button class="btn-secondary" onclick="showScoreboard()">🏆 MEILLEURS SCORES</button>
+        </div>
+    </div>
+
+    <div id="scoreboard-container" class="full-screen" style="display:none;">
+        <div class="card-ui" style="max-width: 400px;">
+            <h2>🏆 TOP 5 MEILLEURS SCORES</h2>
+            <ul id="scoreboard-list" style="text-align: left; list-style: none; padding: 0; margin: 15px 0;">
+            </ul>
+            <button class="btn-main" onclick="hideScoreboard()">RETOUR</button>
         </div>
     </div>
 

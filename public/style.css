@@ -10,6 +10,8 @@ html, body { margin: 0; padding: 0; width: 100%; background: var(--dark); color:
 }
 .card-ui { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; color: #333; text-align: center; }
 .btn-main { background: var(--green); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-secondary { background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9em; }
+.btn-secondary:hover { background: #2980b9; }
 
 #game-container { 
     height: 100vh; width: 100vw; display: flex; flex-direction: column; 

@@ -102,7 +102,48 @@ socket.on('gameOver', (res) => {
     document.getElementById('win-modal').style.display = 'flex';
     document.getElementById('winner-txt').innerText = "🏆 GAGNANT : " + res[0].name;
     document.getElementById('final-scores').innerHTML = res.map(r => `<p>${r.name}: ${r.score} pts</p>`).join('');
+    
+    // Sauvegarder le score du gagnant
+    saveScore(res[0].name, res[0].score);
+    
     if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     playSnd('win');
 });
 function getColorClass(v) { if(v < 0) return 'cat-neg'; if(v === 0) return 'cat-zero'; if(v <= 4) return 'cat-low'; if(v <= 8) return 'cat-mid'; return 'cat-high'; }
+
+// ===== SCOREBOARD MANAGEMENT =====
+let topScores = JSON.parse(localStorage.getItem('skyjo-topscores')) || [];
+
+function saveScore(playerName, score) {
+    topScores.push({ name: playerName, score: score });
+    topScores.sort((a, b) => a.score - b.score); // scores croissants (meilleur = plus bas)
+    topScores = topScores.slice(0, 5); // Garder top 5
+    localStorage.setItem('skyjo-topscores', JSON.stringify(topScores));
+}
+
+function showScoreboard() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('scoreboard-container').style.display = 'flex';
+    updateScoreboardDisplay();
+}
+
+function hideScoreboard() {
+    document.getElementById('scoreboard-container').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'flex';
+}
+
+function updateScoreboardDisplay() {
+    const list = document.getElementById('scoreboard-list');
+    list.innerHTML = '';
+    if(topScores.length === 0) {
+        list.innerHTML = '<li style="text-align: center; color: #999;">Aucun score enregistré</li>';
+    } else {
+        topScores.forEach((entry, idx) => {
+            const medal = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'][idx];
+            const li = document.createElement('li');
+            li.style.cssText = 'padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;';
+            li.innerHTML = `<span>${medal} ${entry.name}</span><span style="font-weight: bold; color: var(--gold);">${entry.score} pts</span>`;
+            list.appendChild(li);
+        });
+    }
+}
