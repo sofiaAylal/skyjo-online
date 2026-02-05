@@ -193,7 +193,21 @@ function getColorClass(v) { if(v < 0) return 'cat-neg'; if(v === 0) return 'cat-
 let topScores = JSON.parse(localStorage.getItem('skyjo-topscores')) || [];
 
 function saveScore(playerName, score) {
-    topScores.push({ name: playerName, score: score });
+    if(typeof playerName !== 'string') playerName = String(playerName || '');
+    const nameKey = playerName.trim();
+    if(!nameKey) return;
+
+    // find existing entry by name (case-insensitive)
+    const existingIndex = topScores.findIndex(s => s.name && s.name.toLowerCase() === nameKey.toLowerCase());
+    if(existingIndex !== -1) {
+        // update only if the new score is better (lower)
+        if(typeof score === 'number' && score < topScores[existingIndex].score) {
+            topScores[existingIndex].score = score;
+        }
+    } else {
+        topScores.push({ name: nameKey, score: score });
+    }
+
     topScores.sort((a, b) => a.score - b.score); // scores croissants (meilleur = plus bas)
     topScores = topScores.slice(0, 5); // Garder top 5
     localStorage.setItem('skyjo-topscores', JSON.stringify(topScores));
@@ -203,11 +217,14 @@ function showScoreboard() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('scoreboard-container').style.display = 'flex';
     updateScoreboardDisplay();
+    const sc = document.getElementById('scoreboard-container');
+    if(sc) { sc.setAttribute('aria-hidden','false'); sc.querySelector('.card-ui')?.focus?.(); }
 }
 
 function hideScoreboard() {
     document.getElementById('scoreboard-container').style.display = 'none';
     document.getElementById('main-menu').style.display = 'flex';
+    const sc = document.getElementById('scoreboard-container'); if(sc) sc.setAttribute('aria-hidden','true');
 }
 
 function updateScoreboardDisplay() {
