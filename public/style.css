@@ -1,11 +1,11 @@
 :root { --blue: #2c3e50; --green: #27ae60; --dark: #1a1a1a; --gold: #f1c40f; }
 * { box-sizing: border-box; touch-action: manipulation; }
-html, body { margin: 0; padding: 0; width: 100%; background: var(--dark); color: white; font-family: sans-serif; overflow-x: hidden; }
+html, body { margin: 0; padding: 0; width: 100%; background: linear-gradient(135deg, #1e3a5f 0%, #2d5f4f 50%, #3a7d6e 100%); color: white; font-family: sans-serif; overflow-x: hidden; }
 
 .full-screen { 
     height: 100%; width: 100%; display: flex; flex-direction: column; 
     align-items: center; justify-content: center; 
-    background: radial-gradient(circle, #2c3e50, #000);
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5f4f 50%, #3a7d6e 100%);
     position: fixed; top: 0; left: 0; z-index: 9999;
 }
 .card-ui { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; display: flex; flex-direction: column; gap: 15px; color: #333; text-align: center; }
